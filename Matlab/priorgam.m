@@ -3,7 +3,7 @@ function [prior] = priorgam(parm)
 %  1) gam_1 is NORMAL with mean 1 and sd .5
 %  2) gam_2 is UNIFORM with [.2,.99)
 %  3) gam_3 is UNIFORM with [.2,.99)
-%  4) gam_4 is BETA with alpha 10 and beta 2
+%  4) gam_4 is BETA with alpha 6 and beta 3
 %
 
 paraA = 1;
