@@ -1,0 +1,1 @@
+RWMH.m and RWMH2.m produce the same results, the only difference is verbose, since RWMH2.m diplay partial results during process.
