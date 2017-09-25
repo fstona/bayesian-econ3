@@ -1,8 +1,10 @@
+workspace()
+
 cd("D:\\PNY\\Doutorado\\Julia\\Econ3")
 include("b_fun.jl")
 
 using Distributions
-using PlotlyJS
+using Plots
 using b_fun
 using Optim
 using DataFrames
@@ -12,9 +14,9 @@ using DataFrames
 # k = 3;
 # x = ones(n,k);
 # fgamma=zeros(n,1);
-# gam = [1.01; 0.6; 0.8; 1.5];
-# x[:,2] = rand(Chisq(10),n);
-# x[:,3] = rand(Chisq(5),n);
+gam = [0.90; 0.40; 0.60; .85];
+# x[:,2] = rand(Gamma(10,1),n); #rand(Chisq(10),n);
+# x[:,3] = rand(Gamma(5,1),n); #rand(Chisq(5),n);
 # epsl = rand(Normal(0,1),n);
 # y = zeros(n,1);
 #
@@ -29,8 +31,8 @@ x = data_frame[:,2:4];
 n = size(x,1);
 k = size(x,2);
 
-x = convert(Array, x)
-y = convert(Array, y)
+x = convert(Array, x);
+y = convert(Array, y);
 
 # OLS
 bols = inv(x'x)x'y;
@@ -46,18 +48,15 @@ end
 nparam=k+1;
 parm = ones(nparam,1);
 parm[1:k,1]=bols;
-parm2 = vec(parm)
+parm = vec(parm);
 
 opt = Optim.Options(f_tol = 1e-8, iterations = 1000);
 Optim.after_while!{T}(d, state::Optim.BFGSState{T}, method::BFGS, options) = global invH = state.invH
 
-r1 = b_fun.post(parm2,y,x,n)
-
-res = optimize(p -> b_fun.post(p,y,x,n), parm2, BFGS(), opt)
+res = optimize(p -> post(p,y,x,n), parm, BFGS(), opt);
 
 bmode = Optim.minimizer(res);
 postvar = Hermitian(invH);
-chol(Hermitian(postvar))
 
 #candidate generating density is Normal with mean = oldraw
 #and variance matrix vscale
@@ -67,7 +66,7 @@ vscale= c*postvar;
 
 #set up things so first candidate draw is always accepted
 lpostdraw = -9e+200;
-bdraw=bmode;
+bdraw = bmode;
 
 #store all draws in the following matrices
 #initialize them here
@@ -82,9 +81,9 @@ s=25000;
 pswitch=0;
 
 #Start the loop
-for i = 1:s
+@time for i = 1:s
 
-    bcan=bdraw + MvNormal(vscale).Σ.mat[:,1];
+    bcan = bdraw + rand(MvNormal(vscale), 4)[:,1]
 
     lpostcan = bw(bcan,y,x,n);
 
@@ -120,5 +119,6 @@ for i = 1:s
 end
 
 alldraws = b_';
-mean(alldraws[:,4])
+mean(alldraws[:,1])
+mode(alldraws[:,1])
 histogram(alldraws[:,1])
